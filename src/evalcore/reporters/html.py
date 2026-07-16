@@ -341,6 +341,61 @@ class HtmlReporter:
             f'<tbody>{rows}</tbody></table></section>'
         )
 
+    def sweep(self, result: models.SweepResult) -> str:
+        variants = [e.variant for e in result.entries] or sorted(
+            {v for row in result.matrix.values() for v in row}
+        )
+        ranking = ''
+        if result.win_metric:
+            direction = 'higher' if result.win_higher_is_better else 'lower'
+            rrows = ''.join(
+                f'<tr><td class="num">{e.rank}</td>'
+                f'<td><code>{_esc(e.variant)}</code></td>'
+                f'<td class="num">{_fmt(e.win_value)}</td></tr>'
+                for e in result.entries
+            )
+            ranking = (
+                f'<p class="meta">ranked by <code>{_esc(result.win_metric)}'
+                f'</code> ({direction} is better)</p>'
+                f'<table><thead><tr><th class="num">rank</th><th>variant</th>'
+                f'<th class="num">{_esc(result.win_metric)}</th></tr></thead>'
+                f'<tbody>{rrows}</tbody></table>'
+            )
+        head = ''.join(f'<th class="num">{_esc(v)}</th>' for v in variants)
+        mrows = ''
+        for metric, row in result.matrix.items():
+            present = [v for v in row.values() if v is not None]
+            best = max(present) if present else None  # display hint only
+            cells = ''
+            for variant in variants:
+                value = row.get(variant)
+                text = _fmt(value)
+                if value is not None and best is not None and value == best:
+                    text = f'<b>{text}</b>'
+                cells += f'<td class="num">{text}</td>'
+            mrows += f'<tr><td>{_esc(metric)}</td>{cells}</tr>'
+        return (
+            f'<section class="card"><h2>Sweep &middot; '
+            f'{_esc(result.project)}/{_esc(result.suite)}</h2>'
+            f'{ranking}<h3>Leaderboard</h3>'
+            f'<div class="scroll"><table><thead><tr><th>metric</th>{head}'
+            f'</tr></thead><tbody>{mrows}</tbody></table></div></section>'
+        )
+
+    def pairwise(self, result: models.PairwiseResult) -> str:
+        return (
+            f'<section class="card"><h2>Pairwise &middot; '
+            f'{_esc(result.project)}/{_esc(result.suite)}</h2>'
+            f'<p class="meta"><code>{_esc(result.variant_a)}</code> (A) vs '
+            f'<code>{_esc(result.variant_b)}</code> (B) &middot; judge '
+            f'<code>{_esc(result.judge_name)}@'
+            f'{_esc(result.judge_version)}</code></p>'
+            f'<p><b>A win-rate {_fmt(result.win_rate_a)}</b> (ties = half) '
+            f'over {result.n} cases &middot; A wins {result.a_wins} '
+            f'&middot; B wins {result.b_wins} &middot; ties {result.ties}</p>'
+            f'</section>'
+        )
+
     def run(self, run: models.RunResult) -> str:
         """Scorecard summary + a per-case table and collapsible outputs.
 

@@ -15,9 +15,11 @@ from evalcore.reporters.base import (
     per_case_matrix,
     register,
     render_agreement,
+    render_pairwise,
     render_pairwise_agreement,
     render_preferences,
     render_run,
+    render_sweep,
     run_body,
     wrap_document,
 )
@@ -28,9 +30,11 @@ __all__ = [
     'per_case_matrix',
     'register',
     'render_agreement',
+    'render_pairwise',
     'render_pairwise_agreement',
     'render_preferences',
     'render_run',
+    'render_sweep',
     'run_body',
     'wrap_document',
 ]

@@ -403,11 +403,13 @@ variants literally named `baseline`/`candidate`. `--revision` is an opaque
 provenance id (git SHA, image digest, release label - whatever your world
 uses; the engine never interprets it).
 
-`run`, `compare`, and `gate` take `--report markdown` (default) or
-`--report html` for a standalone, self-contained report document (a CI
-artifact or PR attachment). Reporters are a registry seam like adapters and
-graders - register a custom format with `evalcore.reporters.base.register`
-and select it by name, e.g. `--report pdf`.
+`run`, `compare`, `gate`, `sweep`, and `pairwise` take `--report markdown`
+(default) or `--report html` for a standalone, self-contained report document
+(a CI artifact or PR attachment), plus `--report-out FILE` to write it instead
+of printing. Reporters are a registry seam like adapters and graders - register
+a custom format with `evalcore.reporters.base.register` and select it by name,
+e.g. `--report pdf`. Every report type is also available as a plain library
+call (`evalcore.reporters` / `evalcore.report`), returning the rendered string.
 
 **The change loop - run, change, run, compare.** To measure whether a
 change (a prompt edit, a new model, a frontend PR) helped or regressed,

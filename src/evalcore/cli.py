@@ -196,7 +196,10 @@ def _cmd_sweep(args: argparse.Namespace) -> int:
         )
     )
     result = sweep_mod.summarize_sweep(runs, suite.thresholds)
-    print(report.render_sweep(result))
+    rep = _reporter(args)
+    _emit_report(
+        args, reporters.wrap_document(rep, reporters.render_sweep(rep, result))
+    )
     if args.export:
         exporter = store.JsonlOutboxExporter(args.export)
         for run in runs:
@@ -230,15 +233,14 @@ def _cmd_pairwise(args: argparse.Namespace) -> int:
             judge_version=config.get('judge_version', 'v1'),
         )
     )
-    body = report.render_pairwise(result)
+    rep = _reporter(args)
+    body = reporters.render_pairwise(rep, result)
     if args.preferences:
         # Fold in how the human panel agreed with this judge, per case.
         prefs = store.read_preferences(args.preferences)
         agreement = rating.compute_pairwise_agreement(prefs, result)
-        body += '\n\n' + reporters.render_pairwise_agreement(
-            reporters.build_reporter('markdown'), agreement
-        )
-    print(body)
+        body += '\n\n' + reporters.render_pairwise_agreement(rep, agreement)
+    _emit_report(args, reporters.wrap_document(rep, body))
     return 0
 
 
@@ -474,6 +476,17 @@ def build_parser() -> argparse.ArgumentParser:
     )
     sweep.add_argument('--export', help='append scorecards to a JSONL outbox')
     sweep.add_argument('--revision')
+    sweep.add_argument(
+        '--report',
+        default='markdown',
+        help='report format: markdown (default), html, or a '
+        'registered custom type',
+    )
+    sweep.add_argument(
+        '--report-out',
+        dest='report_out',
+        help='write the rendered report to a file instead of stdout',
+    )
     sweep.set_defaults(func=_cmd_sweep)
 
     pw = sub.add_parser(
@@ -492,6 +505,17 @@ def build_parser() -> argparse.ArgumentParser:
         '--preferences',
         help='JSONL human preferences (from `rank`) to append a '
         'human-panel vs judge agreement section',
+    )
+    pw.add_argument(
+        '--report',
+        default='markdown',
+        help='report format: markdown (default), html, or a '
+        'registered custom type',
+    )
+    pw.add_argument(
+        '--report-out',
+        dest='report_out',
+        help='write the rendered report to a file instead of stdout',
     )
     pw.set_defaults(func=_cmd_pairwise)
 

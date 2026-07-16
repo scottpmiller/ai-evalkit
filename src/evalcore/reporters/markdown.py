@@ -29,6 +29,12 @@ class MarkdownReporter:
     def pairwise_agreement(self, result: models.PairwiseAgreement) -> str:
         return report.render_pairwise_agreement(result)
 
+    def sweep(self, result: models.SweepResult) -> str:
+        return report.render_sweep(result)
+
+    def pairwise(self, result: models.PairwiseResult) -> str:
+        return report.render_pairwise(result)
+
     def run(self, run: models.RunResult) -> str:
         """Aggregate scorecard + a per-case matrix and failure notes."""
         lines = [report.render_scorecard(run.scorecard)]

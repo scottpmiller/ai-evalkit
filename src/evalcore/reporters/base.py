@@ -157,3 +157,25 @@ def render_pairwise_agreement(
     from evalcore import report
 
     return report.render_pairwise_agreement(result)
+
+
+def render_sweep(reporter: Reporter, result: models.SweepResult) -> str:
+    """An N-way sweep *fragment* (ranking + metric x variant leaderboard),
+    using the reporter's ``sweep`` hook if present, else the Markdown table."""
+    render = getattr(reporter, 'sweep', None)
+    if callable(render):
+        return render(result)
+    from evalcore import report
+
+    return report.render_sweep(result)
+
+
+def render_pairwise(reporter: Reporter, result: models.PairwiseResult) -> str:
+    """An A-vs-B pairwise win-rate *fragment*, using the reporter's
+    ``pairwise`` hook when present, else the Markdown summary."""
+    render = getattr(reporter, 'pairwise', None)
+    if callable(render):
+        return render(result)
+    from evalcore import report
+
+    return report.render_pairwise(result)

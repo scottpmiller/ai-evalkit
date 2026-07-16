@@ -461,5 +461,92 @@ class PreferenceReporterTests(unittest.TestCase):
         self.assertIn('pairwise agreement', out)
 
 
+def _sweep():
+    return models.SweepResult(
+        project='p',
+        suite='s',
+        win_metric='quality.overall',
+        win_higher_is_better=True,
+        entries=[
+            models.SweepEntry(variant='candidate', win_value=0.9, rank=1),
+            models.SweepEntry(variant='baseline', win_value=0.5, rank=2),
+        ],
+        matrix={
+            'quality.overall': {'candidate': 0.9, 'baseline': 0.5},
+            'errors': {'candidate': 0.0, 'baseline': None},
+        },
+    )
+
+
+def _pairwise():
+    return models.PairwiseResult(
+        project='p',
+        suite='s',
+        variant_a='baseline',
+        variant_b='candidate',
+        judge_name='pairwise',
+        judge_version='v1',
+        n=4,
+        a_wins=1,
+        b_wins=3,
+        ties=0,
+        win_rate_a=0.25,
+    )
+
+
+class SweepReporterTests(unittest.TestCase):
+    def test_markdown_sweep_delegates(self):
+        md = reporters.build_reporter('markdown').sweep(_sweep())
+        self.assertIn('## sweep', md)
+        self.assertIn('Leaderboard', md)
+        self.assertIn('candidate', md)
+
+    def test_html_sweep_is_a_card_fragment(self):
+        frag = reporters.build_reporter('html').sweep(_sweep())
+        self.assertIn('class="card"', frag)
+        self.assertIn('Leaderboard', frag)
+        self.assertIn('quality.overall', frag)
+        self.assertIn('0.9000', frag)  # win value formatted
+        self.assertIn('n/a', frag)  # None cell in the matrix
+        self.assertIn('<b>0.9000</b>', frag)  # best cell bolded
+        self.assertNotIn('<!doctype', frag)  # fragment, not a full doc
+
+    def test_render_sweep_falls_back_to_markdown(self):
+        class _Bare:
+            def scorecard(self, sc):
+                return 'SC'
+
+            def comparison(self, cmp):
+                return 'CMP'
+
+        out = base.render_sweep(_Bare(), _sweep())
+        self.assertIn('## sweep', out)  # markdown fallback
+
+
+class PairwiseReporterTests(unittest.TestCase):
+    def test_markdown_pairwise_delegates(self):
+        md = reporters.build_reporter('markdown').pairwise(_pairwise())
+        self.assertIn('## pairwise', md)
+        self.assertIn('A win-rate', md)
+
+    def test_html_pairwise_is_a_card_fragment(self):
+        frag = reporters.build_reporter('html').pairwise(_pairwise())
+        self.assertIn('class="card"', frag)
+        self.assertIn('0.2500', frag)  # win-rate formatted
+        self.assertIn('baseline', frag)
+        self.assertNotIn('<!doctype', frag)
+
+    def test_render_pairwise_falls_back_to_markdown(self):
+        class _Bare:
+            def scorecard(self, sc):
+                return 'SC'
+
+            def comparison(self, cmp):
+                return 'CMP'
+
+        out = base.render_pairwise(_Bare(), _pairwise())
+        self.assertIn('## pairwise', out)
+
+
 if __name__ == '__main__':
     unittest.main()
