@@ -1,0 +1,31 @@
+name: Publish to PyPI
+
+# Publishes to PyPI via Trusted Publishing (OIDC) when a GitHub Release is
+# published - no API tokens stored anywhere. Configure a matching "pending
+# publisher" on PyPI first (see README): project ai-evalkit, this repo, this
+# workflow file (publish.yml), environment "pypi".
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch: {}
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write        # required for Trusted Publishing (OIDC)
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.14"
+
+      - name: Build sdist + wheel
+        run: uv build
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1

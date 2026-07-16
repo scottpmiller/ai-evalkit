@@ -20,7 +20,17 @@ in `examples/quickstart/` (a support-reply eval: custom adapter + custom
 graders + deterministic/classification/LLM-judge checks, runnable fully
 offline) and doubles as an end-to-end usage reference.
 
-## Install / run
+## Install
+
+```bash
+pip install ai-evalkit          # distribution name; imports as `evalkit`
+```
+
+The PyPI package is **`ai-evalkit`** (the name `evalkit` was taken); the import
+package and CLI are still `evalkit` (`import evalkit`, `evalkit --help`). Extras:
+`ai-evalkit[http]`, `ai-evalkit[judge]`.
+
+## Develop
 
 Standard [uv](https://docs.astral.sh/uv/) project; recipes via
 [just](https://github.com/casey/just):
@@ -781,3 +791,13 @@ Known gaps / next:
 - Run robustness lands: retry with exponential backoff on transient failures
   for both the adapter (suite `retry:` + `Output.retryable`) and the LLM judge
   client, plus idempotent mid-run resume from a `run --checkpoint`.
+
+## Releasing
+
+Releases publish to PyPI as **`ai-evalkit`** via
+[Trusted Publishing](https://docs.pypi.org/trusted-publishers/) (OIDC) — no API
+tokens are stored. One-time setup on PyPI: add a *pending publisher* for project
+`ai-evalkit` pointing at owner `scottpmiller`, repo `evalkit`, workflow
+`publish.yml`, environment `pypi`. Then to cut a release: bump `version` in
+`pyproject.toml`, tag it, and publish a GitHub Release — `.github/workflows/publish.yml`
+builds the sdist + wheel and uploads them. (Point it at TestPyPI first for a dry run.)

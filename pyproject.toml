@@ -1,5 +1,7 @@
 [project]
-name = "evalkit"
+# Distribution name on PyPI ("evalkit" was taken). The import package and the
+# console script are still `evalkit` (see [tool.hatch...] and [project.scripts]).
+name = "ai-evalkit"
 version = "0.1.0"
 description = "A generic, consumer-agnostic evaluation engine for prompt, model, and API outputs."
 readme = "README.md"
@@ -18,6 +20,11 @@ dependencies = [
     "pydantic>=2.7,<3",
     "pyyaml>=6,<7",
 ]
+
+[project.urls]
+Homepage = "https://github.com/scottpmiller/evalkit"
+Repository = "https://github.com/scottpmiller/evalkit"
+Issues = "https://github.com/scottpmiller/evalkit/issues"
 
 [project.optional-dependencies]
 # Needed only by the http target adapter (live runs). Replay/offline needs none.
