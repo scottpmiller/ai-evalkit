@@ -1,4 +1,4 @@
-# quickstart — a worked evalcore consumer
+# quickstart - a worked evalcore consumer
 
 A complete, runnable eval for a **support-reply assistant**. It shows every
 moving part of a consumer in one place and runs **fully offline** (no network,
@@ -29,7 +29,7 @@ quickstart/
 From the repo root:
 
 ```bash
-# CLI gate (baseline vs candidate) — offline replay
+# CLI gate (baseline vs candidate) - offline replay
 evalcore --plugins examples.quickstart.graders gate \
     --suite examples/quickstart/suite.yaml --mode replay
 # or: just example
@@ -49,13 +49,13 @@ uv run python -m unittest examples.quickstart.tests.test_quickstart
 
 ## The two extension seams
 
-- **`adapter.py`** — how to call the system under test. Here it's a
+- **`adapter.py`** - how to call the system under test. Here it's a
   deterministic stub so the example runs offline; swap it for a class that
   calls your real API/library/CLI and nothing else in the suite changes.
-- **`graders.py`** — how outputs are scored. `acknowledges_customer` is a
+- **`graders.py`** - how outputs are scored. `acknowledges_customer` is a
   per-case check (averaged into a pass-rate); `distinct_reply_rate` is a
   whole-run aggregate (catches mode collapse). Both register on import.
 
-Everything else — the runner, comparison, gate, judge harness, reporters — is
+Everything else - the runner, comparison, gate, judge harness, reporters - is
 the engine, reused unchanged. See the top-level `README.md` for the full
 reference and `docs/design.md` for the design.

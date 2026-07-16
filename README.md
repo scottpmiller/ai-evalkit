@@ -68,7 +68,7 @@ The five steps, in dependency order:
 ## 1. Cases (the dataset)
 
 A dataset is a directory containing `cases/`, holding one YAML (or JSON)
-file per case. Every field except `id` is **opaque to the engine** — only
+file per case. Every field except `id` is **opaque to the engine** - only
 your adapter and graders interpret `input` and `expected`:
 
 ```yaml
@@ -98,7 +98,7 @@ class TargetAdapter(typing.Protocol):
 ```
 
 It receives one `Case` and one `Variant` and must return an
-`Output` — never raise for a failed invocation; set `Output.error` instead
+`Output` - never raise for a failed invocation; set `Output.error` instead
 so graders can count it (see `errors` below). Set `Output.retryable = True`
 alongside a *transient* error (a 429, a 5xx, a network timeout) and the
 runner's retry loop will back off and try again (see "Retries" below); leave
@@ -136,8 +136,8 @@ the latency still recorded.
 
 ### Custom adapters
 
-When the built-in isn't enough — auth dances, response post-processing,
-non-HTTP targets — register your own under a config `type` and select it in
+When the built-in isn't enough - auth dances, response post-processing,
+non-HTTP targets - register your own under a config `type` and select it in
 the suite. Subclassing the http adapter is often the shortest path.
 `examples/quickstart/adapter.py` is a worked example: it turns each case's
 input into structured `Output.fields` your graders can score:
@@ -156,20 +156,20 @@ class MyAdapter(http.HTTPAdapter):
 
 Constructor kwargs come from the suite's `adapter:` mapping (everything
 except `type`). Load the module at run time with `--plugins my_service.graders`
-(CLI) or a plain `import` (Python API) — registration happens on import.
+(CLI) or a plain `import` (Python API) - registration happens on import.
 
 An adapter need not be HTTP-backed: it can grade *what a deployed system
-already did* by reading from an observability store — turning an aggregated
+already did* by reading from an observability store - turning an aggregated
 result row into `Output.fields`.
 
 An adapter that holds resources (a browser, an injected session, pooled
 connections) may expose an optional async `aclose()`; the runner calls it
-after the run, even on failure — so a browser-automation adapter (e.g. one
+after the run, even on failure - so a browser-automation adapter (e.g. one
 driving Playwright) can open its context once and tear it down cleanly.
 
 ## 3. Variants (what's being compared)
 
-A variant is a named dict of **knobs** — opaque to the engine, interpreted
+A variant is a named dict of **knobs** - opaque to the engine, interpreted
 by your adapter (usually via `$variant.*` refs in the body template):
 
 ```yaml
@@ -264,17 +264,17 @@ metrics: only `Score`s reach a scorecard, so a value the adapter merely put in
 field's metric name defaults to the ref's leaf (`output.cost` -> `cost`); add
 `min`/`max` to also emit per-case pass/fail. Absent or non-numeric fields
 degrade to `null`. `compare`'s guardrails and a `win_metric` with
-`win_higher_is_better: false` then gate on these directly — e.g. gating a
+`win_higher_is_better: false` then gate on these directly - e.g. gating a
 `generation_cost` or `tool_error_rate` alongside quality judges.
 
 The judge runs live (`AnthropicJudgeClient` forced tool call, or
-`OpenAIJudgeClient` `json_schema` — both temperature 0, needing the `judge`
+`OpenAIJudgeClient` `json_schema` - both temperature 0, needing the `judge`
 extra plus `ANTHROPIC_API_KEY`/`OPENAI_API_KEY`) or offline
 (`ReplayJudgeClient`), chosen by the run mode like the adapter. Each
 dimension becomes a metric `<name>.<key>` plus a `<name>.overall` mean.
 
 **Panel + images.** Replace the single `model`/`replay_path` with a
-`judges:` list to run a **panel** — each judge scores independently:
+`judges:` list to run a **panel** - each judge scores independently:
 
 ```yaml
   - type: llm_judge
@@ -293,14 +293,14 @@ A panel emits, on top of the per-dimension panel means and `<name>.overall`:
 `<name>.<judge>.overall` (each judge's own mean, so a systematically
 generous judge is visible), `<name>.disagreement` (mean inter-judge spread
 in raw points), and `<name>.flagged` (1.0 when any dimension's spread
-reaches `disagreement_threshold` — averaged across cases, the fraction a
+reaches `disagreement_threshold` - averaged across cases, the fraction a
 human should review). `image_refs` resolve to file paths (from
 `output.artifacts`) or inline `{media_type, data}`; images are sent live
 only, so replay stays offline. A single judge emits none of the panel-only
 metrics, so existing single-judge suites are unchanged (a panel is the natural
 fit for judging rendered screenshots with a Claude+GPT pair, for instance).
 
-Custom graders register exactly like adapters — see
+Custom graders register exactly like adapters - see
 `examples/quickstart/graders.py` for one of each kind (a per-case
 keyword check and a whole-run distinctness check). A grader that needs to
 know the run mode (live vs replay) can expose `set_mode(mode: str)`; the
@@ -309,7 +309,7 @@ runner calls it before the run starts.
 ## 5. Fixtures (offline / CI runs)
 
 Replay mode swaps the configured adapter for recorded outputs, keyed by
-case id and variant name — the whole pipeline then runs with no network,
+case id and variant name - the whole pipeline then runs with no network,
 keys, or deployed service:
 
 ```yaml
@@ -400,16 +400,16 @@ evalcore compare --suite my_service/suite.yaml \
 
 `gate` picks variant names from `thresholds.variants`, falling back to
 variants literally named `baseline`/`candidate`. `--revision` is an opaque
-provenance id (git SHA, image digest, release label — whatever your world
+provenance id (git SHA, image digest, release label - whatever your world
 uses; the engine never interprets it).
 
 `run`, `compare`, and `gate` take `--report markdown` (default) or
 `--report html` for a standalone, self-contained report document (a CI
 artifact or PR attachment). Reporters are a registry seam like adapters and
-graders — register a custom format with `evalcore.reporters.base.register`
+graders - register a custom format with `evalcore.reporters.base.register`
 and select it by name, e.g. `--report pdf`.
 
-**The change loop — run, change, run, compare.** To measure whether a
+**The change loop - run, change, run, compare.** To measure whether a
 change (a prompt edit, a new model, a frontend PR) helped or regressed,
 run the *same variant* before and after and compare the two saved runs:
 
@@ -423,11 +423,11 @@ evalcore compare --suite my_service/suite.yaml \
 
 The comparison's guardrails + win metric then read as "did the change
 regress?" For nondeterministic targets (LLMs, browsers) raise `n_samples`
-so each metric is a mean (with `stdev`) over several generations — a single
+so each metric is a mean (with `stdev`) over several generations - a single
 run per side makes a small delta indistinguishable from run-to-run noise,
 and `win_min_delta` is your noise floor.
 
-**Python API** — everything the CLI does is a library call; the full worked
+**Python API** - everything the CLI does is a library call; the full worked
 version is `examples/quickstart/run_eval.py`:
 
 ```python
@@ -478,8 +478,8 @@ observation passed; `0.9167` = 11 of 12. The metric name is the grader's
 rubric-scored 1..scale by the pinned judge, normalized to 0..1, averaged
 across observations. `overall` is the per-output mean of the dimensions,
 then averaged. An output the judge couldn't score (errored invocation,
-missing content) contributes *nothing* — it is excluded from the mean, not
-counted as zero — so always read judge means alongside `errors`.
+missing content) contributes *nothing* - it is excluded from the mean, not
+counted as zero - so always read judge means alongside `errors`.
 
 **Set-level aggregates** (classification + custom aggregate graders).
 Computed once over the whole run from a confusion matrix. The
@@ -496,7 +496,7 @@ stray verdict can never masquerade as a catch. Then:
 | `f1` | 2PR/(P+R) | single-number balance of the two |
 | `false_negative_rate` | FN/(FN+TP) | misses, as a fraction of real positives |
 | `false_positive_rate` | FP/(FP+TN) | false alarms, as a fraction of real negatives |
-| `accuracy` | (TP+TN)/all | overall fraction correct — flatters on imbalanced data; never guardrail it |
+| `accuracy` | (TP+TN)/all | overall fraction correct - flatters on imbalanced data; never guardrail it |
 | `support_positive` / `support_negative` | TP+FN / TN+FP | the denominators: how much evidence backs the rates |
 | `errors` | count | invocations that failed or produced no usable label |
 
@@ -506,7 +506,7 @@ slipped through", FPR = "a negative got blocked". They have different
 denominators, so they stay honest on imbalanced datasets where `accuracy`
 lies. `support_*` doubles as a drift alarm: if it changes between runs on
 the same `dataset_hash`, extraction or labels broke. `errors` is a raw
-count and worth a `max: 0` guardrail — errored results are excluded from
+count and worth a `max: 0` guardrail - errored results are excluded from
 every rate, so without it a variant that crashes on its hardest cases
 would look *better*.
 
@@ -525,7 +525,7 @@ is not the combined F1).
 The badge is the verdict; the tail is why. The delta table lists every
 metric with baseline / candidate / delta; the row marked
 **(improved | regressed | neutral)** is the configured win metric. Its call
-uses the dead band: `|delta| <= win_min_delta` → **neutral** — deliberate
+uses the dead band: `|delta| <= win_min_delta` → **neutral** - deliberate
 protection against celebrating (or reverting on) noise from small samples.
 
 The **Guardrails** section shows each rule as `[ok]` or `[BREACH]` with the
@@ -538,7 +538,7 @@ measured value. Verdict logic, in order:
 
 `gate` (and the example driver) exit non-zero exactly on **FAIL**, so the
 verdict drops straight into CI. A **PASS with neutral win** is a perfectly
-good outcome — it means "no regression, no proven improvement".
+good outcome - it means "no regression, no proven improvement".
 
 ## Provenance (trusting a number later)
 
@@ -549,19 +549,19 @@ judge_version, revision, suite_hash, dataset_hash, mode, created_at`.
 The declared versions state *intent*; the engine-computed content hashes
 prove it: `suite_hash` digests the raw suite file, `dataset_hash` digests
 the loaded cases (order-independent, formatting-independent). Two runs
-whose hashes match evaluated the same config over the same data — if a
+whose hashes match evaluated the same config over the same data - if a
 metric moved, the *system under test* moved. If a hash changed, the eval
 itself changed and the comparison is apples-to-oranges: re-baseline.
 `revision` ties the run to whatever provenance scheme you use (commit,
 image digest, release label). A judge model/prompt/scale change is also a
-re-baseline event — bump `judge_version`; the runner lifts each judge
+re-baseline event - bump `judge_version`; the runner lifts each judge
 grader's pin (`key@version`, a panel joins them) onto `Scorecard.judge_version`
 so it rides the reproducibility key, and it stays recorded on every judge
 score's `detail` too.
 
 ## Per-sample results
 
-`runner.run_suite` returns a **`RunResult`** — the scorecard plus every
+`runner.run_suite` returns a **`RunResult`** - the scorecard plus every
 per-sample `CaseResult` (the output, its `artifacts`, and its scores). The
 scorecard is the aggregate; the results are the ground truth it was folded
 from. Persist the whole thing with `store.write_run` (CLI: `run --run-out`)
@@ -574,10 +574,10 @@ observations, so repeat-generation spread is visible, not just the average.
 Set `concurrency: N` in the suite to run invocations concurrently (the
 adapter and per-case graders must then tolerate concurrent calls).
 
-**Retries.** Live targets fail transiently — a rate limit, a 5xx, a dropped
+**Retries.** Live targets fail transiently - a rate limit, a 5xx, a dropped
 connection. A `retry:` block (above) makes the runner re-invoke the adapter
 with exponential backoff (`backoff_base * 2**(attempt-1)`, capped at
-`backoff_max`, ± `jitter`) when — and only when — the adapter marks the
+`backoff_max`, ± `jitter`) when - and only when - the adapter marks the
 failure `Output.retryable`. The built-in `http` adapter flags 429/5xx/network
 errors and leaves other 4xx terminal; a custom adapter sets the flag for
 whatever its transient failures are. The default (`max_attempts: 1`) is a
@@ -602,7 +602,7 @@ evalcore run --suite suite.yaml --variant candidate --checkpoint run.ckpt --resu
 
 The checkpoint's meta line records `suite_hash`/`dataset_hash`, so a resume
 against a changed suite, dataset, or variant refuses rather than mixing
-incompatible results — delete the checkpoint to start over (which `--resume`
+incompatible results - delete the checkpoint to start over (which `--resume`
 also does implicitly when the file is absent). A checkpointed `(case, sample)`
 is treated as done whether it succeeded or errored; to redo just the failures,
 drop their lines from the checkpoint first.
@@ -626,13 +626,13 @@ evalcore agreement --run cand.run.json --ratings ratings.jsonl \
 
 `rate` serves a dependency-free localhost page: a seeded-shuffled queue and
 1..scale buttons per dimension. It renders each item as **typed panels**
-derived from the output — `image`/`pdf` artifacts, `html` (sandboxed iframe
-with a rendered/source toggle), `json`, or `text` — so plain-text
+derived from the output - `image`/`pdf` artifacts, `html` (sandboxed iframe
+with a rendered/source toggle), `json`, or `text` - so plain-text
 or JSON results render with zero config, and any number of artifacts become
 that many panels. `--content-ref`/`--screenshot-ref` are the common
 shorthand; a repeatable `--view label:kind:ref` gives explicit control.
 Sessions are **resumable** (a rater only sees items they haven't scored).
-**Blinding is enforced server-side** — the queue payload carries an opaque
+**Blinding is enforced server-side** - the queue payload carries an opaque
 item id and never the run/variant/model; ratings map back to
 `(run_id, case_id, sample_idx)` only on the server. Ratings land in a JSONL
 file (`models.Rating`) that is the **open interchange format**: any external
@@ -645,7 +645,7 @@ dimension as a win metric; a panel's `flagged` cases (see the judge panel
 above) are the natural first items to route through `rate`.
 
 **Side-by-side preference (`rank`/`preferences`).** `rate` scores each output
-in isolation; `rank` is its A-vs-B analog — the human counterpart of
+in isolation; `rank` is its A-vs-B analog - the human counterpart of
 `pairwise`. It shows both variants' outputs for the same case as neutral
 "Option 1"/"Option 2" columns and the rater picks a winner overall and per
 dimension:
@@ -663,18 +663,18 @@ evalcore preferences --run-a base.run.json --run-b cand.run.json \
 
 Left/right sides are **shuffled per rater and un-blinded server-side**, so a
 stored pick is always in *variant* terms (`variant_a`/`variant_b`) regardless
-of which side it was shown on — position bias counterbalances across raters
+of which side it was shown on - position bias counterbalances across raters
 exactly like `pairwise`'s order swap. Sessions are resumable and picks land
 in a JSONL file (`models.Preference`), the **open A-vs-B interchange format**.
 `preferences` aggregates it (ties count half); to check the LLM pairwise judge
 against the human panel, pass the same file to `pairwise --preferences
-prefs.jsonl`, which appends a per-case human-vs-judge agreement table — the
+prefs.jsonl`, which appends a per-case human-vs-judge agreement table - the
 head-to-head calibration gate.
 
 **Live judges on recorded data.** `--mode` drives the adapter; `--judge-mode`
 drives the graders independently (default: same as `--mode`). So
 `--mode replay --judge-mode live` re-scores recorded outputs with the live
-judge panel — no regeneration — which is how you iterate on a rubric or
+judge panel - no regeneration - which is how you iterate on a rubric or
 re-record judge fixtures cheaply.
 
 ## Sweeps & pairwise win-rate
@@ -690,13 +690,13 @@ evalcore pairwise --suite suite.yaml --a baseline --b candidate --mode replay
 ```
 
 `sweep` prints a ranked leaderboard plus a full metric × variant matrix (a
-model × prompt-version grid is just several named variants) — reusing the
+model × prompt-version grid is just several named variants) - reusing the
 per-variant runner unchanged; it's pure orchestration + tabulation.
 
 `pairwise` is the sharper subjective signal: instead of scoring each output
 in isolation, a judge is shown **both** variants' outputs for the same case
 and picks a winner, and evalcore reports A's win-rate (ties count half).
-Order is **counterbalanced** — each pair is judged both ways and a pick that
+Order is **counterbalanced** - each pair is judged both ways and a pick that
 flips when you swap the order collapses to a tie, so position bias can't
 manufacture a winner. Configure it under `thresholds.pairwise` (`content_ref`,
 `model`/`replay_path`, optional `rubric`/`context_refs`); it runs live
@@ -740,7 +740,7 @@ comparisons; pick one with `--report`). Register more with
 `evalcore.adapters.base.register` / `evalcore.graders.base.register` /
 `evalcore.reporters.base.register` and load them with `--plugins your.module`
 (CLI) or a plain import (Python API). If onboarding a new consumer ever
-requires touching `src/evalcore/`, that's an abstraction leak — fix the engine
+requires touching `src/evalcore/`, that's an abstraction leak - fix the engine
 seam, don't fork it.
 
 ## Layout
@@ -794,9 +794,9 @@ Known gaps / next:
 ## Releasing
 
 Releases publish to PyPI as **`evalcore`** via
-[Trusted Publishing](https://docs.pypi.org/trusted-publishers/) (OIDC) — no API
+[Trusted Publishing](https://docs.pypi.org/trusted-publishers/) (OIDC) - no API
 tokens are stored. One-time setup on PyPI: add a *pending publisher* for project
 `evalcore` pointing at owner `scottpmiller`, repo `evalcore`, workflow
 `publish.yml`, environment `pypi`. Then to cut a release: bump `version` in
-`pyproject.toml`, tag it, and publish a GitHub Release — `.github/workflows/publish.yml`
+`pyproject.toml`, tag it, and publish a GitHub Release - `.github/workflows/publish.yml`
 builds the sdist + wheel and uploads them. (Point it at TestPyPI first for a dry run.)
