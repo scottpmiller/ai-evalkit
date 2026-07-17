@@ -11,5 +11,6 @@ Importing this package registers the built-in adapter types.
 """
 
 from evalcore.adapters import base, http, replay
+from evalcore.adapters.env import expand_env
 
-__all__ = ['base', 'http', 'replay']
+__all__ = ['base', 'expand_env', 'http', 'replay']

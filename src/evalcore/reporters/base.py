@@ -27,6 +27,7 @@ happens once, at the edge, so fragments compose (a ``run`` body and an
 import typing
 
 from evalcore import models, report
+from evalcore.errors import ConfigError
 
 
 @typing.runtime_checkable
@@ -46,7 +47,7 @@ def register(type_name: str) -> typing.Callable[[type], type]:
 
     def _decorate(cls: type) -> type:
         if type_name in _REGISTRY:
-            raise ValueError(f'report type {type_name!r} already registered')
+            raise ConfigError(f'report type {type_name!r} already registered')
         _REGISTRY[type_name] = cls
         return cls
 
@@ -58,7 +59,7 @@ def build_reporter(spec: str | dict) -> Reporter:
     spec = {'type': spec} if isinstance(spec, str) else dict(spec)
     type_name = spec.pop('type')
     if type_name not in _REGISTRY:
-        raise ValueError(
+        raise ConfigError(
             f'unknown report type {type_name!r}; known: {sorted(_REGISTRY)}'
         )
     return _REGISTRY[type_name](**spec)

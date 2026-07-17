@@ -118,7 +118,7 @@ class RefsEdgeTests(unittest.TestCase):
 
 class HttpEnvTests(unittest.TestCase):
     def test_expand_env_recurses_into_list(self):
-        self.assertEqual(http_adapter._expand_env(['${NOPE}', 2]), ['', 2])
+        self.assertEqual(http_adapter.expand_env(['${NOPE}', 2]), ['', 2])
 
 
 class SweepMissingMetricTests(unittest.TestCase):

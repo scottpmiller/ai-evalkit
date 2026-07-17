@@ -5,7 +5,7 @@ import unittest
 from unittest import mock
 
 from evalcore import compare, models, refs, store
-from evalcore.adapters import _env
+from evalcore.adapters import expand_env
 from evalcore.graders import base, classification, deterministic, numeric
 
 
@@ -196,7 +196,7 @@ class EnvExpansionTests(unittest.TestCase):
             'number': 5,
         }
         with mock.patch.dict('os.environ', env):
-            expanded = _env._expand_env(template)
+            expanded = expand_env(template)
         self.assertEqual(
             expanded,
             {
@@ -209,7 +209,7 @@ class EnvExpansionTests(unittest.TestCase):
 
     def test_unset_var_expands_to_empty(self):
         with mock.patch.dict('os.environ', {}, clear=True):
-            self.assertEqual(_env._expand_env('${MISSING}'), '')
+            self.assertEqual(expand_env('${MISSING}'), '')
 
 
 class RegistryTests(unittest.TestCase):

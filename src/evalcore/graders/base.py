@@ -8,6 +8,7 @@ per-case and aggregate buckets the runner needs.
 import typing
 
 from evalcore import models
+from evalcore.errors import ConfigError
 
 
 @typing.runtime_checkable
@@ -40,7 +41,7 @@ def register(type_name: str) -> typing.Callable[[type], type]:
 
     def _decorate(cls: type) -> type:
         if type_name in _REGISTRY:
-            raise ValueError(f'grader type {type_name!r} already registered')
+            raise ConfigError(f'grader type {type_name!r} already registered')
         _REGISTRY[type_name] = cls
         return cls
 
@@ -61,7 +62,7 @@ def build_graders(
         spec = dict(spec)
         type_name = spec.pop('type')
         if type_name not in _REGISTRY:
-            raise ValueError(
+            raise ConfigError(
                 f'unknown grader type {type_name!r}; '
                 f'known: {sorted(_REGISTRY)}'
             )

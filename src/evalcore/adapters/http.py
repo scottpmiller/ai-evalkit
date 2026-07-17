@@ -13,7 +13,7 @@ import time
 
 from evalcore import models, refs
 from evalcore.adapters import base
-from evalcore.adapters._env import _expand_env
+from evalcore.adapters.env import expand_env
 
 
 @base.register('http')
@@ -50,10 +50,10 @@ class HTTPAdapter:
             'case': case.model_dump(),
         }
         payload = refs.build_value(self.body_template, context)
-        url = _expand_env(self.base_url).rstrip('/') + self.path
+        url = expand_env(self.base_url).rstrip('/') + self.path
         # Drop headers whose ${ENV} expanded to empty (e.g. unset auth) so we
         # never send a blank Authorization that a proxy might 400 on.
-        headers = {k: v for k, v in _expand_env(self.headers).items() if v}
+        headers = {k: v for k, v in expand_env(self.headers).items() if v}
 
         start = time.monotonic()
         try:

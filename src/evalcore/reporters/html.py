@@ -18,7 +18,7 @@ from evalcore.reporters import base
 def _dump(fields: dict) -> str:
     try:
         return json.dumps(fields, indent=2, default=str)[:6000]
-    except TypeError, ValueError:
+    except (TypeError, ValueError):
         return str(fields)[:6000]
 
 

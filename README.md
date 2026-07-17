@@ -29,6 +29,33 @@ pip install evalcore
 Imports as `evalcore` (`import evalcore`); CLI is `evalcore` (`evalcore --help`).
 Extras: `evalcore[http]` (live HTTP adapter), `evalcore[judge]` (live LLM judge).
 
+## Quickstart
+
+Score a candidate against a baseline over a suite and read the gate verdict -
+fully offline against recorded fixtures, so it runs with no network or API keys:
+
+```python
+import evalcore as ec
+
+suite = ec.load_suite('suite.yaml')
+baseline = ec.run_suite_sync(suite, 'baseline', mode='replay').scorecard
+candidate = ec.run_suite_sync(suite, 'candidate', mode='replay').scorecard
+
+result = ec.compare.compare(baseline, candidate, suite.thresholds)
+print(result.verdict)            # 'pass' | 'warn' | 'fail'
+print(ec.report.render_comparison(result))   # Markdown diff + guardrails
+```
+
+Or from the command line (exits non-zero on `fail`, so it drops into CI):
+
+```bash
+evalcore gate --suite suite.yaml --mode replay
+```
+
+`examples/quickstart/` is a complete, runnable version of the above (custom
+adapter + graders + suite). The rest of this README is the reference for
+writing your own.
+
 ## Develop
 
 Standard [uv](https://docs.astral.sh/uv/) project; recipes via

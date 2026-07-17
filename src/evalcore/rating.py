@@ -773,7 +773,7 @@ class _Handler(_BaseHandler):
             view = int((query.get('v') or ['-1'])[0])
             try:
                 self._serve_file(self.app.items[idx]['files'][view])
-            except OSError, IndexError, KeyError:
+            except (OSError, IndexError, KeyError):
                 self._send(404, b'', 'application/octet-stream')
         else:
             self._send(404, '{}')
@@ -1256,7 +1256,7 @@ class _RankHandler(_BaseHandler):
             rater = (query.get('rater') or ['anon'])[0]
             try:
                 self._serve_file(self.app.file_path(idx, side, rater, view))
-            except OSError, IndexError, KeyError:
+            except (OSError, IndexError, KeyError):
                 self._send(404, b'', 'application/octet-stream')
         else:
             self._send(404, '{}')

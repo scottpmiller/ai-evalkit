@@ -3,6 +3,7 @@
 import typing
 
 from evalcore import models
+from evalcore.errors import ConfigError
 
 
 @typing.runtime_checkable
@@ -22,7 +23,7 @@ def register(type_name: str) -> typing.Callable[[type], type]:
 
     def _decorate(cls: type) -> type:
         if type_name in _REGISTRY:
-            raise ValueError(f'adapter type {type_name!r} already registered')
+            raise ConfigError(f'adapter type {type_name!r} already registered')
         _REGISTRY[type_name] = cls
         return cls
 
@@ -34,7 +35,7 @@ def build_adapter(spec: dict) -> TargetAdapter:
     spec = dict(spec)
     type_name = spec.pop('type')
     if type_name not in _REGISTRY:
-        raise ValueError(
+        raise ConfigError(
             f'unknown adapter type {type_name!r}; known: {sorted(_REGISTRY)}'
         )
     return _REGISTRY[type_name](**spec)
